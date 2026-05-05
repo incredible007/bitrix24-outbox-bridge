@@ -6,10 +6,14 @@ export type Bitrix24OutboxItem = typeof schema.bitrix24Outbox.$inferSelect
 
 export interface OutboxRepositoryInterface {
     claimPendingBatch(pagination?: PaginationOptions): Promise<Bitrix24OutboxItem[]>
-    insertEvent(variant: EventVariants, payload: unknown): Promise<Bitrix24OutboxItem | undefined>
-    updateStatus(oid: number, status: EventStates): Promise<void>
-    markProcessed(oid: number): Promise<void>
-    updateError(oid: number, errorMessage: string): Promise<void>
+    insertEvent(
+        variant: EventVariants,
+        payload: object,
+        idempotencyKey: string,
+    ): Promise<Bitrix24OutboxItem | undefined>
+    updateStatus(boid: number, status: EventStates): Promise<void>
+    markProcessed(boid: number): Promise<void>
+    updateError(boid: number, errorMessage: string): Promise<void>
     resetStuckJobs(timeoutMinutes: number): Promise<void>
 }
 
