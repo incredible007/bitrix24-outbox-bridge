@@ -9,6 +9,6 @@ import { LeadFactory } from '@/bitrix/factory/lead.factory'
     providers: [LeadFactory, BitrixAuthService, TokenRepository, BitrixHttpClient],
     controllers: [],
     imports: [],
-    exports: [LeadFactory],
+    exports: [LeadFactory, BitrixHttpClient],
 })
 export class BitrixModule {}
