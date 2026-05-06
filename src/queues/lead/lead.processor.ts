@@ -6,16 +6,27 @@ import { BitrixHttpClient } from '@/bitrix/client/bitrix-http.client'
 import { BitrixClientError } from '@/bitrix/errors/bitrix-client.error'
 import { BitrixRateLimitError } from '@/bitrix/errors/bitrix-rate-limit.error'
 import { LeadFactory } from '@/bitrix/factory/lead.factory'
+import { RATE_LIMIT_DURATION_MS, RATE_LIMIT_MAX } from '@/common/constants'
 import { EventStatesValues } from '@/database/types'
 import { CreateLeadDto } from '@/outbox/dto/create-lead.dto'
-import { BitrixLeadJobPayloadInterface } from '@/outbox/interfaces/bitrix-lead-job-payload.interface'
 import {
     OUTBOX_REPOSITORY,
     OutboxRepositoryInterface,
 } from '@/outbox/interfaces/outbox-repository.interface'
-import { LEAD_DLQ, LEAD_DLQ_JOB, LEAD_QUEUE, LeadDlqJobPayload } from '@/queues/lead/lead.queue'
+import {
+    LEAD_DLQ,
+    LEAD_DLQ_JOB,
+    LEAD_QUEUE,
+    LeadCreatePayload,
+    LeadDlqJobPayload,
+} from '@/queues/lead/lead.queue'
 
-@Processor(LEAD_QUEUE)
+@Processor(LEAD_QUEUE, {
+    limiter: {
+        max: RATE_LIMIT_MAX,
+        duration: RATE_LIMIT_DURATION_MS,
+    },
+})
 export class LeadProcessor extends WorkerHost {
     private readonly logger = new Logger(LeadProcessor.name)
 
@@ -30,7 +41,7 @@ export class LeadProcessor extends WorkerHost {
         super()
     }
 
-    async process(job: Job<BitrixLeadJobPayloadInterface>): Promise<void> {
+    async process(job: Job<LeadCreatePayload>): Promise<void> {
         const event = await this.outboxRepo.fetchEvent(job.data.outboxId)
 
         if (event.bitrixId) {

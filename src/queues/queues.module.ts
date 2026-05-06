@@ -5,7 +5,7 @@ import { BitrixModule } from '@/bitrix/bitrix.module'
 import { OutboxModule } from '@/outbox/outbox.module'
 import { LeadDlqHandler } from '@/queues/lead/lead.dlq.handler'
 import { LeadProcessor } from '@/queues/lead/lead.processor'
-import { leadDlqConfig, leadQueueConfig } from '@/queues/lead/lead.queue'
+import { leadDlqConfig, LeadQueue, leadQueueConfig } from '@/queues/lead/lead.queue'
 
 @Module({
     imports: [
@@ -15,6 +15,7 @@ import { leadDlqConfig, leadQueueConfig } from '@/queues/lead/lead.queue'
         OutboxModule,
         LeadDlqHandler,
     ],
-    providers: [LeadProcessor],
+    providers: [LeadProcessor, LeadQueue],
+    exports: [LeadQueue],
 })
 export class QueuesModule {}

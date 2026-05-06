@@ -5,10 +5,11 @@ import { OUTBOX_REPOSITORY } from '@/outbox/interfaces/outbox-repository.interfa
 import { OutboxController } from '@/outbox/outbox.controller'
 import { OutboxRepository } from '@/outbox/outbox.repository'
 import { OutboxService } from '@/outbox/outbox.service'
+import { QueuesModule } from '@/queues/queues.module'
 
 @Module({
     providers: [{ provide: OUTBOX_REPOSITORY, useClass: OutboxRepository }, OutboxService],
-    imports: [BitrixModule],
+    imports: [BitrixModule, QueuesModule],
     controllers: [OutboxController],
     exports: [OutboxRepository],
 })
