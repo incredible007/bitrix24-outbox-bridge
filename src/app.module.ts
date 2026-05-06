@@ -1,4 +1,6 @@
+import { BullModule } from '@nestjs/bullmq'
 import { Module } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 
 import { BitrixModule } from '@/bitrix/bitrix.module'
 import { CommonConfigModule } from '@/config/common-config.module'
@@ -6,6 +8,20 @@ import { DatabaseModule } from '@/database/database.module'
 import { QueuesModule } from '@/queues/queues.module'
 
 @Module({
-    imports: [DatabaseModule, CommonConfigModule, BitrixModule, QueuesModule],
+    imports: [
+        DatabaseModule,
+        CommonConfigModule,
+        BitrixModule,
+        QueuesModule,
+        BullModule.forRootAsync({
+            useFactory: (config: ConfigService) => ({
+                connection: {
+                    host: config.get<string>('redis.host'),
+                    port: config.get<number>('redis.port'),
+                },
+            }),
+            inject: [ConfigService],
+        }),
+    ],
 })
 export class AppModule {}
