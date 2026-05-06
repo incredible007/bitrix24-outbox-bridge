@@ -12,9 +12,10 @@ export interface OutboxRepositoryInterface {
         idempotencyKey: string,
     ): Promise<Bitrix24OutboxItem | undefined>
     updateStatus(boid: number, status: EventStates): Promise<void>
-    markProcessed(boid: number): Promise<void>
+    markProcessed(boid: number, bitrixId: string): Promise<void>
     updateError(boid: number, errorMessage: string): Promise<void>
     resetStuckJobs(timeoutMinutes: number): Promise<void>
+    fetchEvent(boid: number): Promise<Bitrix24OutboxItem>
 }
 
 export const OUTBOX_REPOSITORY = Symbol.for('OutboxRepositoryInterface')

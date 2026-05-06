@@ -71,12 +71,13 @@ export class OutboxRepository implements OutboxRepositoryInterface {
             .where(eq(schema.bitrix24Outbox.boid, boid))
     }
 
-    async markProcessed(boid: number): Promise<void> {
+    async markProcessed(boid: number, bitrixId: string): Promise<void> {
         await this.db
             .update(schema.bitrix24Outbox)
             .set({
                 eventState: 'SUCCEEDED',
                 processedAt: new Date(),
+                bitrixId,
             })
             .where(eq(schema.bitrix24Outbox.boid, boid))
     }
@@ -106,5 +107,15 @@ export class OutboxRepository implements OutboxRepositoryInterface {
                     lt(schema.bitrix24Outbox.processingAt, timeout),
                 ),
             )
+    }
+
+    async fetchEvent(boid: number): Promise<Bitrix24OutboxItem> {
+        const [item] = await this.db
+            .select()
+            .from(schema.bitrix24Outbox)
+            .where(eq(schema.bitrix24Outbox.boid, boid))
+            .limit(1)
+
+        return item
     }
 }
