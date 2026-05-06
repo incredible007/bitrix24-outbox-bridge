@@ -15,6 +15,11 @@ export const envSchema = z.object({
     BULL_BOARD_PASSWORD: z.string().min(1),
 
     API_KEY: z.string().min(32),
+
+    BITRIX_CLIENT_ID: z.string().min(1),
+    BITRIX_CLIENT_SECRET: z.string().min(1),
+    BITRIX_REDIRECT_URI: z.string().url(),
+    BITRIX_DOMAIN: z.string().min(1),
 })
 
 export type Env = z.infer<typeof envSchema>
