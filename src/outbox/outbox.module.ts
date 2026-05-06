@@ -10,5 +10,6 @@ import { OutboxService } from '@/outbox/outbox.service'
     providers: [{ provide: OUTBOX_REPOSITORY, useClass: OutboxRepository }, OutboxService],
     imports: [BitrixModule],
     controllers: [OutboxController],
+    exports: [OutboxRepository],
 })
 export class OutboxModule {}
