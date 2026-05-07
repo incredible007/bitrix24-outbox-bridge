@@ -5,14 +5,11 @@ import { ConfigService } from '@nestjs/config'
 import { BitrixModule } from '@/bitrix/bitrix.module'
 import { CommonConfigModule } from '@/config/common-config.module'
 import { DatabaseModule } from '@/database/database.module'
+import { HealthModule } from '@/health/health.module'
 import { QueuesModule } from '@/queues/queues.module'
 
 @Module({
     imports: [
-        DatabaseModule,
-        CommonConfigModule,
-        BitrixModule,
-        QueuesModule,
         BullModule.forRootAsync({
             useFactory: (config: ConfigService) => ({
                 connection: {
@@ -22,6 +19,11 @@ import { QueuesModule } from '@/queues/queues.module'
             }),
             inject: [ConfigService],
         }),
+        DatabaseModule,
+        CommonConfigModule,
+        BitrixModule,
+        QueuesModule,
+        HealthModule,
     ],
 })
 export class AppModule {}

@@ -37,6 +37,10 @@ interface LeadJobMap {
 export class LeadQueue {
     constructor(@InjectQueue(LEAD_QUEUE) private queue: Queue) {}
 
+    get bullQueue(): Queue {
+        return this.queue
+    }
+
     add<K extends keyof LeadJobMap>(name: K, data: LeadJobMap[K], opts?: JobsOptions) {
         return this.queue.add(name, data, opts)
     }
