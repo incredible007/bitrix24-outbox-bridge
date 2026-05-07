@@ -1,10 +1,11 @@
 # Build stage
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY package*.json tsconfig*.json ./
-RUN npm ci
+RUN npm install -g pnpm
+COPY package.json pnpm-lock.yaml tsconfig*.json ./
+RUN pnpm install --frozen-lockfile
 COPY src ./src
-RUN npm run build
+RUN pnpm run build
 
 # Prod stage
 FROM node:20-alpine AS production
