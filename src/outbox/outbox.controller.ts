@@ -1,9 +1,10 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common'
 import { ApiHeader, ApiOperation, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger'
 import { createHash } from 'node:crypto'
 
 import { ContactFactory } from '@/bitrix/factory/contact.factory'
 import { LeadFactory } from '@/bitrix/factory/lead.factory'
+import { ApiKeyGuard } from '@/common/guards/api-key.guard'
 import { EventVariantValues } from '@/database/types'
 import { CreateContactDto } from '@/outbox/dto/create-contact.dto'
 import { CreateLeadDto } from '@/outbox/dto/create-lead.dto'
@@ -11,6 +12,7 @@ import { OutboxService } from '@/outbox/outbox.service'
 
 @ApiTags('outbox')
 @Controller('outbox')
+@UseGuards(ApiKeyGuard)
 @ApiSecurity('x-api-key')
 export class OutboxController {
     constructor(
