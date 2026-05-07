@@ -1,4 +1,4 @@
-export interface BitrixLeadPayload {
+export interface BitrixCreateLeadPayload {
     fields: {
         TITLE: string
         NAME?: string
