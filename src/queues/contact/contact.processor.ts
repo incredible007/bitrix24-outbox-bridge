@@ -4,6 +4,8 @@ import { Job, Queue, UnrecoverableError } from 'bullmq'
 
 import { BitrixHttpClient } from '@/bitrix/client/bitrix-http.client'
 import { ContactFactory } from '@/bitrix/factory/contact.factory'
+import { RATE_LIMIT_DURATION_MS, RATE_LIMIT_MAX } from '@/common/constants'
+import { exponentialBackoffWithJitter } from '@/common/utils/backoff.utils'
 import { CreateContactDto } from '@/outbox/dto/create-contact.dto'
 import {
     OUTBOX_REPOSITORY,
@@ -18,7 +20,15 @@ import {
 } from '@/queues/contact/contact.queue'
 import { handleBitrixJobError } from '@/queues/handle-job-error'
 
-@Processor(CONTACT_QUEUE)
+@Processor(CONTACT_QUEUE, {
+    limiter: {
+        max: RATE_LIMIT_MAX,
+        duration: RATE_LIMIT_DURATION_MS,
+    },
+    settings: {
+        backoffStrategy: exponentialBackoffWithJitter,
+    },
+})
 export class ContactProcessor extends WorkerHost {
     private readonly logger = new Logger(ContactProcessor.name)
 

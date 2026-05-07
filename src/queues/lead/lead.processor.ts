@@ -5,6 +5,7 @@ import { Job, Queue, UnrecoverableError } from 'bullmq'
 import { BitrixHttpClient } from '@/bitrix/client/bitrix-http.client'
 import { LeadFactory } from '@/bitrix/factory/lead.factory'
 import { RATE_LIMIT_DURATION_MS, RATE_LIMIT_MAX } from '@/common/constants'
+import { exponentialBackoffWithJitter } from '@/common/utils/backoff.utils'
 import { CreateLeadDto } from '@/outbox/dto/create-lead.dto'
 import {
     OUTBOX_REPOSITORY,
@@ -23,6 +24,9 @@ import {
     limiter: {
         max: RATE_LIMIT_MAX,
         duration: RATE_LIMIT_DURATION_MS,
+    },
+    settings: {
+        backoffStrategy: exponentialBackoffWithJitter,
     },
 })
 export class LeadProcessor extends WorkerHost {
