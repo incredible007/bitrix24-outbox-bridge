@@ -16,7 +16,7 @@ async function bootstrap() {
     )
 
     const config = new DocumentBuilder()
-        .setTitle('Bitrix24 outbox bridge')
+        .setTitle('Bitrix24 Outbox Bridge')
         .setDescription(
             'Отказоустойчивая система сохранения лидов, контактов, компаний, сделок в Bitrix24 CRM с очередью и Outbox Pattern',
         )
