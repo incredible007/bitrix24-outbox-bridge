@@ -3,8 +3,8 @@
 > **Fault-tolerant webhook gateway for guaranteed CRM delivery.**
 > Reliably captures leads, contacts, deals, and companies from any external source and persists them to Bitrix24 — even when the CRM API, the queue, or the database is temporarily unavailable.
 
-[![CI](https://github.com/andrewpodgola/bitrix24-outbox-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/andrewpodgola/bitrix24-outbox-bridge/actions/workflows/ci.yml)
-[![CD](https://github.com/andrewpodgola/bitrix24-outbox-bridge/actions/workflows/cd.yml/badge.svg)](https://github.com/andrewpodgola/bitrix24-outbox-bridge/actions/workflows/cd.yml)
+[![CI](https://github.com/incredible007/bitrix24-outbox-bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/incredible007/bitrix24-outbox-bridge/actions/workflows/ci.yml)
+[![CD](https://github.com/incredible007/bitrix24-outbox-bridge/actions/workflows/cd.yml/badge.svg)](https://github.com/incredible007/bitrix24-outbox-bridge/actions/workflows/cd.yml)
 ![Node](https://img.shields.io/badge/Node-20-green)
 ![NestJS](https://img.shields.io/badge/NestJS-11-red)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)
@@ -35,49 +35,38 @@ Leads and contacts in B2B/B2C businesses have real monetary value. A single miss
 ## Architecture
 
 ```
-External Source (landing page, ad platform, etc.)
-         │
-         │  POST /outbox/create_lead
-         │  POST /outbox/create_contact
-         ▼
-┌─────────────────────────────────────────────────────────┐
-│                  NestJS Application                     │
-│                                                         │
-│  ┌──────────────┐    ┌─────────────────────────────┐   │
-│  │  API Key     │    │      OutboxController        │   │
-│  │  Guard       │───▶│  (validation + factory)      │   │
-│  └──────────────┘    └────────────┬────────────────┘   │
-│                                   │ enqueue()           │
-│                      ┌────────────▼────────────────┐   │
-│                      │    OutboxRepository          │   │
-│                      │  INSERT INTO outbox          │   │
-│                      │  (state: PENDING)            │   │
-│                      └─────────────────────────────┘   │
-│                                                         │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │  OutboxPoller  (every 2 s)                         │ │
-│  │   1. resetStuckJobs (> 5 min in PROCESSING)        │ │
-│  │   2. claimPendingBatch (50 events, FOR UPDATE      │ │
-│  │      SKIP LOCKED → prevents double-processing)     │ │
-│  │   3. push job to BullMQ                            │ │
-│  └─────────────┬──────────────────────────────────── ┘ │
-│                │                                        │
-│   ┌────────────▼──────────────────────────────────┐    │
-│   │   BullMQ  (Redis-backed)                       │    │
-│   │                                                │    │
-│   │  lead-queue    ──▶ LeadProcessor               │    │
-│   │  contact-queue ──▶ ContactProcessor            │    │
-│   │                                                │    │
-│   │  On failure (5 attempts, exponential backoff): │    │
-│   │       └──▶ lead-dlq / contact-dlq              │    │
-│   └───────────────────────┬────────────────────────┘   │
-└───────────────────────────┼─────────────────────────── ┘
-                            │
-                            ▼
-               ┌────────────────────┐
-               │   Bitrix24 REST    │
-               │   API              │
-               └────────────────────┘
+External Source  (landing page, ad platform, etc.)
+        |
+        |  POST /outbox/create_lead
+        |  POST /outbox/create_contact
+        v
++-------------------------------------------------------+
+|               NestJS Application                      |
+|                                                       |
+|   [API Key Guard] --> [OutboxController]              |
+|                            |                          |
+|                            | enqueue()                |
+|                            v                          |
+|                   [OutboxRepository]                  |
+|                   INSERT INTO outbox                  |
+|                   (state: PENDING)                    |
+|                            |                          |
+|   OutboxPoller (every 2s)  |                          |
+|   +------------------------+                          |
+|   | 1. resetStuckJobs (>5 min in PROCESSING)          |
+|   | 2. claimPendingBatch (50 rows, SKIP LOCKED)       |
+|   | 3. push to BullMQ                                 |
+|   +---> [BullMQ / Redis]                              |
+|          |                                            |
+|          +--> lead-queue    --> LeadProcessor         |
+|          +--> contact-queue --> ContactProcessor      |
+|                                                       |
+|         On failure (5 attempts, exponential backoff): |
+|          +--> lead-dlq / contact-dlq                  |
++-------------------------------------------------------+
+                       |
+                       v
+             [ Bitrix24 REST API ]
 ```
 
 **Technology stack**
