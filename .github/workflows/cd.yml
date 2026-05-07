@@ -39,36 +39,41 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy docker-compose.yml to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: docker-compose.yml
+          target: ${{ secrets.DEPLOY_PATH }}
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: >-
-            APP_API_KEY,APP_NODE_ENV,APP_PORT,APP_DB_URL,
-            APP_REDIS_HOST,APP_REDIS_PORT,APP_REDIS_TTL,
-            APP_BULL_BOARD_USER,APP_BULL_BOARD_PASSWORD,
-            APP_BITRIX_CLIENT_ID,APP_BITRIX_CLIENT_SECRET,
-            APP_BITRIX_REDIRECT_URI,APP_BITRIX_DOMAIN
           script: |
             cd ${{ secrets.DEPLOY_PATH }}
 
-            cat > .env << EOF
-            API_KEY=${APP_API_KEY}
-            NODE_ENV=${APP_NODE_ENV}
-            PORT=${APP_PORT}
-            DB_URL=${APP_DB_URL}
-            REDIS_HOST=${APP_REDIS_HOST}
-            REDIS_PORT=${APP_REDIS_PORT}
-            REDIS_TTL=${APP_REDIS_TTL}
-            BULL_BOARD_USER=${APP_BULL_BOARD_USER}
-            BULL_BOARD_PASSWORD=${APP_BULL_BOARD_PASSWORD}
-            BITRIX_CLIENT_ID=${APP_BITRIX_CLIENT_ID}
-            BITRIX_CLIENT_SECRET=${APP_BITRIX_CLIENT_SECRET}
-            BITRIX_REDIRECT_URI=${APP_BITRIX_REDIRECT_URI}
-            BITRIX_DOMAIN=${APP_BITRIX_DOMAIN}
-            EOF
+            cat > .env << 'ENVEOF'
+            API_KEY=${{ secrets.APP_API_KEY }}
+            NODE_ENV=${{ vars.APP_NODE_ENV }}
+            PORT=${{ vars.APP_PORT }}
+            DB_URL=${{ secrets.APP_DB_URL }}
+            REDIS_HOST=${{ vars.APP_REDIS_HOST }}
+            REDIS_PORT=${{ vars.APP_REDIS_PORT }}
+            REDIS_TTL=${{ vars.APP_REDIS_TTL }}
+            BULL_BOARD_USER=${{ secrets.APP_BULL_BOARD_USER }}
+            BULL_BOARD_PASSWORD=${{ secrets.APP_BULL_BOARD_PASSWORD }}
+            BITRIX_CLIENT_ID=${{ secrets.APP_BITRIX_CLIENT_ID }}
+            BITRIX_CLIENT_SECRET=${{ secrets.APP_BITRIX_CLIENT_SECRET }}
+            BITRIX_REDIRECT_URI=${{ secrets.APP_BITRIX_REDIRECT_URI }}
+            BITRIX_DOMAIN=${{ secrets.APP_BITRIX_DOMAIN }}
+            ENVEOF
 
             docker login registry.andrewpodgola.pro -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }}
             docker compose pull
