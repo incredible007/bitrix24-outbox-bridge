@@ -62,6 +62,7 @@ jobs:
             cat > .env << 'ENVEOF'
             API_KEY=${{ secrets.APP_API_KEY }}
             NODE_ENV=${{ vars.APP_NODE_ENV }}
+            APP_URL=${{ secrets.APP_URL }}
             PORT=${{ vars.APP_PORT }}
             DB_URL=${{ secrets.APP_DB_URL }}
             REDIS_HOST=${{ vars.APP_REDIS_HOST }}
