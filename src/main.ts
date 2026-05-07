@@ -1,9 +1,45 @@
+import { ValidationPipe } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 
 import { AppModule } from './app.module'
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule)
+
+    app.useGlobalPipes(
+        new ValidationPipe({
+            whitelist: true,
+            forbidNonWhitelisted: true,
+            transform: true,
+        }),
+    )
+
+    const config = new DocumentBuilder()
+        .setTitle('Bitrix24 outbox bridge')
+        .setDescription(
+            'Отказоустойчивая система сохранения лидов, контактов, компаний, сделок в Bitrix24 CRM с очередью и Outbox Pattern',
+        )
+        .setVersion('1.0')
+        .addApiKey(
+            {
+                type: 'apiKey',
+                name: 'x-api-key',
+                in: 'header',
+                description: 'API ключ для авторизации',
+            },
+            'x-api-key',
+        )
+        .build()
+
+    const document = SwaggerModule.createDocument(app, config)
+    SwaggerModule.setup('api-doc', app, document, {
+        swaggerOptions: {
+            persistAuthorization: true,
+        },
+    })
+
+    app.enableShutdownHooks()
 
     await app.listen(process.env.PORT ?? 3000)
 }

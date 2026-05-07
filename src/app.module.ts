@@ -6,6 +6,7 @@ import { BitrixModule } from '@/bitrix/bitrix.module'
 import { CommonConfigModule } from '@/config/common-config.module'
 import { DatabaseModule } from '@/database/database.module'
 import { HealthModule } from '@/health/health.module'
+import { OutboxModule } from '@/outbox/outbox.module'
 import { QueuesModule } from '@/queues/queues.module'
 
 @Module({
@@ -23,6 +24,7 @@ import { QueuesModule } from '@/queues/queues.module'
         CommonConfigModule,
         BitrixModule,
         QueuesModule,
+        OutboxModule,
         HealthModule,
     ],
 })

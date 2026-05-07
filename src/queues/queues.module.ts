@@ -17,7 +17,6 @@ import { leadDlqConfig, LeadQueue, leadQueueConfig } from '@/queues/lead/lead.qu
         BullModule.registerQueue(contactQueueConfig),
         BullModule.registerQueue(contactDlqConfig),
         OutboxModule,
-        LeadDlqHandler,
     ],
     providers: [LeadProcessor, LeadQueue, ContactQueue, ContactDlqHandler, LeadDlqHandler],
     exports: [LeadQueue, ContactQueue],
