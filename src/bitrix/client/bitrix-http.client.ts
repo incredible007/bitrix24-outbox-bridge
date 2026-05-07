@@ -5,14 +5,19 @@ import { BitrixAuthService } from '@/bitrix/auth/bitrix-auth.service'
 import { BitrixClientError } from '@/bitrix/errors/bitrix-client.error'
 import { BitrixRateLimitError } from '@/bitrix/errors/bitrix-rate-limit.error'
 import { BitrixApiResponse } from '@/bitrix/interfaces/bitrix-api-response.interface'
-import { BitrixLeadPayload } from '@/outbox/interfaces/bitrix-lead-payload.interface'
+import { BitrixCreateContactPayload } from '@/outbox/interfaces/bitrix-create-contact-payload.interface'
+import { BitrixCreateLeadPayload } from '@/outbox/interfaces/bitrix-create-lead-payload.interface'
 
 @Injectable()
 export class BitrixHttpClient {
     constructor(private readonly authService: BitrixAuthService) {}
 
-    async createLead(payload: BitrixLeadPayload): Promise<string> {
+    async createLead(payload: BitrixCreateLeadPayload): Promise<string> {
         return this.post('crm.lead.add', payload)
+    }
+
+    async createContact(payload: BitrixCreateContactPayload): Promise<string> {
+        return this.post('crm.contact.add', payload)
     }
 
     private async post(method: string, payload: unknown): Promise<string> {

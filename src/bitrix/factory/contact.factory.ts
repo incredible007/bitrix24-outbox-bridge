@@ -1,21 +1,18 @@
 import { Injectable } from '@nestjs/common'
 
-import { CreateLeadDto } from '@/outbox/dto/create-lead.dto'
-
-import { BitrixCreateLeadPayload } from '../../outbox/interfaces/bitrix-create-lead-payload.interface'
+import { CreateContactDto } from '@/outbox/dto/create-contact.dto'
+import { BitrixCreateContactPayload } from '@/outbox/interfaces/bitrix-create-contact-payload.interface'
 
 @Injectable()
-export class LeadFactory {
-    toCreatePayload(dto: CreateLeadDto): BitrixCreateLeadPayload {
+export class ContactFactory {
+    toCreatePayload(dto: CreateContactDto): BitrixCreateContactPayload {
         return {
             fields: {
-                TITLE: dto.title ?? `Заявка от ${dto.firstName} ${dto.lastName}`,
                 NAME: dto.firstName,
                 LAST_NAME: dto.lastName,
                 PHONE: dto.phone ? [{ VALUE: dto.phone, VALUE_TYPE: 'MOBILE' }] : undefined,
                 EMAIL: dto.email ? [{ VALUE: dto.email, VALUE_TYPE: 'WORK' }] : undefined,
                 COMMENTS: dto.comment,
-                SOURCE_ID: 'WEB',
             },
         }
     }

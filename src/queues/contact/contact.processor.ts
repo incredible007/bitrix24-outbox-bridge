@@ -3,43 +3,37 @@ import { Inject, Logger } from '@nestjs/common'
 import { Job, Queue, UnrecoverableError } from 'bullmq'
 
 import { BitrixHttpClient } from '@/bitrix/client/bitrix-http.client'
-import { LeadFactory } from '@/bitrix/factory/lead.factory'
-import { RATE_LIMIT_DURATION_MS, RATE_LIMIT_MAX } from '@/common/constants'
-import { CreateLeadDto } from '@/outbox/dto/create-lead.dto'
+import { ContactFactory } from '@/bitrix/factory/contact.factory'
+import { CreateContactDto } from '@/outbox/dto/create-contact.dto'
 import {
     OUTBOX_REPOSITORY,
     OutboxRepositoryInterface,
 } from '@/outbox/interfaces/outbox-repository.interface'
-import { handleBitrixJobError } from '@/queues/handle-job-error'
 import {
-    LEAD_DLQ,
-    LEAD_DLQ_JOB,
-    LEAD_QUEUE,
-    LeadCreatePayload,
-    LeadDlqJobPayload,
-} from '@/queues/lead/lead.queue'
+    CONTACT_DLQ,
+    CONTACT_DLQ_JOB,
+    CONTACT_QUEUE,
+    ContactCreatePayload,
+    ContactDlqJobPayload,
+} from '@/queues/contact/contact.queue'
+import { handleBitrixJobError } from '@/queues/handle-job-error'
 
-@Processor(LEAD_QUEUE, {
-    limiter: {
-        max: RATE_LIMIT_MAX,
-        duration: RATE_LIMIT_DURATION_MS,
-    },
-})
-export class LeadProcessor extends WorkerHost {
-    private readonly logger = new Logger(LeadProcessor.name)
+@Processor(CONTACT_QUEUE)
+export class ContactProcessor extends WorkerHost {
+    private readonly logger = new Logger(ContactProcessor.name)
 
     constructor(
-        @InjectQueue(LEAD_DLQ)
-        private readonly dlQueue: Queue<LeadDlqJobPayload>,
+        @InjectQueue(CONTACT_DLQ)
+        private readonly dlQueue: Queue<ContactDlqJobPayload>,
         @Inject(OUTBOX_REPOSITORY)
         private readonly outboxRepo: OutboxRepositoryInterface,
-        private readonly leadFactory: LeadFactory,
+        private readonly contactFactory: ContactFactory,
         private readonly bitrixClient: BitrixHttpClient,
     ) {
         super()
     }
 
-    async process(job: Job<LeadCreatePayload>): Promise<void> {
+    async process(job: Job<ContactCreatePayload>, token?: string): Promise<any> {
         const event = await this.outboxRepo.fetchEvent(job.data.outboxId)
 
         if (event.bitrixId) {
@@ -48,17 +42,17 @@ export class LeadProcessor extends WorkerHost {
             )
         }
 
-        const payload = this.leadFactory.toCreatePayload(event.payload as CreateLeadDto)
+        const payload = this.contactFactory.toCreatePayload(event.payload as CreateContactDto)
 
         try {
-            const bitrixId = await this.bitrixClient.createLead(payload)
+            const bitrixId = await this.bitrixClient.createContact(payload)
             await this.outboxRepo.markProcessed(event.boid, bitrixId)
         } catch (error) {
             await handleBitrixJobError(
                 job,
                 error,
                 event.boid,
-                LEAD_DLQ_JOB,
+                CONTACT_DLQ_JOB,
                 this.dlQueue,
                 this.outboxRepo,
                 this.logger,

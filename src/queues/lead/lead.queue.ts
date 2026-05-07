@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common'
 import { Queue } from 'bullmq'
 import { JobsOptions } from 'bullmq'
 
-import { type BitrixLeadPayload } from '@/outbox/interfaces/bitrix-lead-payload.interface'
+import { type BitrixCreateLeadPayload } from '../../outbox/interfaces/bitrix-create-lead-payload.interface'
 
 export const LEAD_QUEUE = 'lead-queue'
 export const LEAD_CREATE_JOB = 'lead-create-job'
@@ -23,7 +23,7 @@ export const leadQueueConfig = {
 }
 
 export interface LeadCreatePayload {
-    payload: BitrixLeadPayload
+    payload: BitrixCreateLeadPayload
     outboxId: number
     retryAfter?: number
 }
@@ -48,7 +48,7 @@ export const LEAD_DLQ_JOB = 'lead-dlq-job'
 export interface LeadDlqJobPayload {
     originalJob: {
         outboxId: number
-        payload: BitrixLeadPayload
+        payload: BitrixCreateLeadPayload
     }
     reason: string
     failedAt: Date
