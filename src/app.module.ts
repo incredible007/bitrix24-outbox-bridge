@@ -9,6 +9,8 @@ import { HealthModule } from '@/health/health.module'
 import { OutboxModule } from '@/outbox/outbox.module'
 import { QueuesModule } from '@/queues/queues.module'
 
+import { BullBoardConfigModule } from './bull-board/bull-board-config.module'
+
 @Module({
     imports: [
         BullModule.forRootAsync({
@@ -20,6 +22,7 @@ import { QueuesModule } from '@/queues/queues.module'
             }),
             inject: [ConfigService],
         }),
+        BullBoardConfigModule,
         DatabaseModule,
         CommonConfigModule,
         BitrixModule,
