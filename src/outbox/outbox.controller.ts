@@ -2,10 +2,12 @@ import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs
 import { ApiHeader, ApiOperation, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger'
 import { createHash } from 'node:crypto'
 
+import { CompanyFactory } from '@/bitrix/factory/company.factory'
 import { ContactFactory } from '@/bitrix/factory/contact.factory'
 import { LeadFactory } from '@/bitrix/factory/lead.factory'
 import { ApiKeyGuard } from '@/common/guards/api-key.guard'
 import { EventVariantValues } from '@/database/types'
+import type { CreateCompanyDto } from '@/outbox/dto/create-company.dto'
 import { CreateContactDto } from '@/outbox/dto/create-contact.dto'
 import { CreateLeadDto } from '@/outbox/dto/create-lead.dto'
 import { OutboxService } from '@/outbox/outbox.service'
@@ -19,6 +21,7 @@ export class OutboxController {
         private readonly outboxService: OutboxService,
         private readonly leadFactory: LeadFactory,
         private readonly contactFactory: ContactFactory,
+        private readonly companyFactory: CompanyFactory,
     ) {}
 
     @Post('create_lead')
@@ -90,13 +93,52 @@ export class OutboxController {
     })
     async createContact(@Body() dto: CreateContactDto) {
         const idempotencyKey = createHash('sha256')
-            .update(
-                `${EventVariantValues.CRM_CONTACT_ADD}_${dto.email}_${new Date().toISOString().slice(0, 10)}`,
-            )
+            .update(`${EventVariantValues.CRM_CONTACT_ADD}_${dto.email}_${dto.phone}`)
             .digest('hex')
         const payload = this.contactFactory.toCreatePayload(dto)
         await this.outboxService.enqueue(
             EventVariantValues.CRM_CONTACT_ADD,
+            payload,
+            idempotencyKey,
+        )
+        return { status: 'accepted' }
+    }
+
+    @Post('create_company')
+    @HttpCode(202)
+    @ApiHeader({ name: 'x-api-key', required: true })
+    @HttpCode(HttpStatus.ACCEPTED)
+    @ApiOperation({
+        summary: 'Enqueue a Bitrix24 creation company',
+        description:
+            'Помещает создание компании в очередь. Доставка гарантирована через Outbox Pattern + BullMQ.',
+    })
+    @ApiResponse({
+        status: HttpStatus.ACCEPTED,
+        description: 'Компания принята в очередь',
+        schema: {
+            example: { queued: true },
+        },
+    })
+    @ApiResponse({
+        status: HttpStatus.UNAUTHORIZED,
+        description: 'Неверный или отсутствующий API ключ',
+    })
+    @ApiResponse({
+        status: HttpStatus.BAD_REQUEST,
+        description: 'Невалидные данные запроса',
+    })
+    @ApiResponse({
+        status: HttpStatus.CONFLICT,
+        description: 'Компания с такими признаками уже существует',
+    })
+    async createCompany(@Body() dto: CreateCompanyDto) {
+        const idempotencyKey = createHash('sha256')
+            .update(`${EventVariantValues.CRM_COMPANY_ADD}_${dto.inn}_${dto.ogrn}`)
+            .digest('hex')
+        const payload = this.companyFactory.toCreatePayload(dto)
+        await this.outboxService.enqueue(
+            EventVariantValues.CRM_COMPANY_ADD,
             payload,
             idempotencyKey,
         )

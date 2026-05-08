@@ -5,6 +5,7 @@ import { BitrixAuthService } from '@/bitrix/auth/bitrix-auth.service'
 import { BitrixClientError } from '@/bitrix/errors/bitrix-client.error'
 import { BitrixRateLimitError } from '@/bitrix/errors/bitrix-rate-limit.error'
 import { BitrixApiResponse } from '@/bitrix/interfaces/bitrix-api-response.interface'
+import { BitrixCreateCompanyPayload } from '@/outbox/interfaces/bitrix-create-company-payload.interface'
 import { BitrixCreateContactPayload } from '@/outbox/interfaces/bitrix-create-contact-payload.interface'
 import { BitrixCreateLeadPayload } from '@/outbox/interfaces/bitrix-create-lead-payload.interface'
 
@@ -18,6 +19,10 @@ export class BitrixHttpClient {
 
     async createContact(payload: BitrixCreateContactPayload): Promise<string> {
         return this.post('crm.contact.add', payload)
+    }
+
+    async createCompany(payload: BitrixCreateCompanyPayload): Promise<string> {
+        return this.post('crm.company.add', payload)
     }
 
     private async post(method: string, payload: unknown): Promise<string> {

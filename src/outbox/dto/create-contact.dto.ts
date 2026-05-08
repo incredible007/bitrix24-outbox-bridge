@@ -14,8 +14,8 @@ export class CreateContactDto {
 
     @ApiProperty({ example: '+79991234567', description: 'Номер телефона', required: false })
     @IsString()
-    @IsOptional()
-    phone?: string
+    @IsNotEmpty()
+    phone: string
 
     @ApiProperty({
         example: 'user@example.com',
@@ -23,8 +23,8 @@ export class CreateContactDto {
         required: false,
     })
     @IsEmail()
-    @IsOptional()
-    email?: string
+    @IsNotEmpty()
+    email: string
 
     @ApiProperty({ example: 'Комментарий к контакту', description: 'Комментарий', required: false })
     @IsString()

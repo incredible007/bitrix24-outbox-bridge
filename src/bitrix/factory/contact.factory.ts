@@ -10,8 +10,8 @@ export class ContactFactory {
             fields: {
                 NAME: dto.firstName,
                 LAST_NAME: dto.lastName,
-                PHONE: dto.phone ? [{ VALUE: dto.phone, VALUE_TYPE: 'MOBILE' }] : undefined,
-                EMAIL: dto.email ? [{ VALUE: dto.email, VALUE_TYPE: 'WORK' }] : undefined,
+                PHONE: [{ VALUE: dto.phone, VALUE_TYPE: 'MOBILE' }],
+                EMAIL: [{ VALUE: dto.email, VALUE_TYPE: 'WORK' }],
                 COMMENTS: dto.comment,
             },
         }
